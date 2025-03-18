@@ -1,0 +1,9 @@
+0 INDIAN
+1 Capital
+2 Hello
+3 Love
+4 Namaste
+5 Name
+6 Thank you
+7 what
+8 you

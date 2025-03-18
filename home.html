@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Language Detection</title>
+    <link rel="stylesheet" href="Sign-Language-detection\static\css\demo.css">
+</head>
+<body style="background-color:#4B0082;">
+<div class="container" style="text-align:center;" >
+        <h1 style="color:white;">Sign Language Detection</h1>
+        <section>
+            <h2 style="color:white;">Welcome</h2>
+            <p style="color:white;">We are here for you! Click on the start button.</p>
+        </section>
+        <button onclick="startWebcam()" style="color:white;">Start Webcam</button>
+        <div id="webcam-container"></div>
+        <div id="prediction-result"></div>
+    </div>
+    <script>
+     function startWebcam() {
+    const video = document.createElement('video');
+    video.width = 300;
+    video.height = 300;
+    video.autoplay = true;
+    document.getElementById('webcam-container').appendChild(video);
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            video.srcObject = stream;
+
+            const canvas = document.createElement('canvas');
+            canvas.width = video.width;
+            canvas.height = video.height;
+            const ctx = canvas.getContext('2d');
+
+            function captureFrame() {
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/png');
+
+                fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ image: imageData })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('prediction-result');
+                    if (data.error) {
+                        resultDiv.innerText = `Error: ${data.error}`;
+                    } else {
+                        resultDiv.innerText = `Prediction: ${data.prediction}`;
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+
+                requestAnimationFrame(captureFrame);
+            }
+
+            captureFrame();
+        })
+        .catch(error => console.error('Error accessing webcam:', error));
+}
+
+    </script>
+</body>
+</html>
